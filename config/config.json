@@ -1,0 +1,26 @@
+{
+  "development": {
+    "username": "euexyxvz",
+    "password": "cNwe2i-AD-aiRLkV6q52HEctHiynEaDB",
+    "database": "euexyxvz",
+    "host": "raja.db.elephantsql.com",
+    "dialect": "postgres",
+    "operatorsAliases": false
+  },
+  "test": {
+    "username": "euexyxvz",
+    "password": "cNwe2i-AD-aiRLkV6q52HEctHiynEaDB",
+    "database": "euexyxvz",
+    "host": "raja.db.elephantsql.com",
+    "dialect": "postgres",
+    "operatorsAliases": false
+  },
+  "production": {
+    "username": "euexyxvz",
+    "password": "cNwe2i-AD-aiRLkV6q52HEctHiynEaDB",
+    "database": "euexyxvz",
+    "host": "raja.db.elephantsql.com",
+    "dialect": "postgres",
+    "operatorsAliases": false
+  }
+}
