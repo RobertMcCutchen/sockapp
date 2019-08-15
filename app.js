@@ -6,6 +6,8 @@ const app = express()
 const bcrypt = require('bcrypt')
 const saltRounds = 10
 const models = require('./models')
+const multer = require('multer')
+const upload = multer({dest: __dirname + '/uploads/images'})
 
 //This code initializes sessions.
 app.use(session({
@@ -16,6 +18,9 @@ app.use(session({
 
 //This set up the middleware.
 app.use(express.urlencoded())
+app.use('/static', express.static(__dirname + '/static'))
+app.use(express.static('public'))
+app.use('/uploads', express.static('uploads'))
 
 //This line of code keeps users from viewing 'auth' pages without being logged in.
 app.all('/auth/*',authenticate)
@@ -50,13 +55,23 @@ app.get('/register', (req,res) => {
 })
 
 //This code gives functionality to the 'register' page.
-app.post('/register',(req,res) => {
+app.post('/register', upload.single('photo'), (req,res) => {
     let username = req.body.username 
     let password = req.body.password
     let sockcolor = req.body.sockcolor
     let sockstyle = req.body.sockstyle
-    let imageurl = req.body.imageurl
     let emailaddress = req.body.emailaddress
+    let imageurl = null
+
+    // res.json(req.file).then(object => object.path)
+    console.log('file', req.file)
+    if(req.file) {
+        // res.json(req.file)
+        imageurl = req.file.filename
+    }
+    // else {
+    //     res.send("Something went wrong with upload...")
+    // }
     
     //This encrypts the password.
     bcrypt.hash(password, 10).then(function(hash) {
@@ -69,16 +84,18 @@ app.post('/register',(req,res) => {
             emailaddress: emailaddress,
         })
 
-        user.save().then(savedUser => res.json(savedUser))
+        user.save().then(savedUser => console.log('user saved'))
     .catch(error => console.log(error))
     }) 
     res.redirect('/home')
 })
 
+//This code creates the 'login' page.
 app.get('/login', (req,res) => {
     res.render('login')
 })
 
+//This code gives functionality to the 'login' page.
 app.post('/login', async (req,res) => {
     let username = req.body.username
     let password = req.body.password
@@ -100,9 +117,7 @@ app.post('/login', async (req,res) => {
             if(result) {
                 if(req.session) {
                     req.session.user = {userid: user.id}
-                    res.send('Got it!')
-                    console.log('Yay!')
-                    //res.redirect('/auth/home')
+                    res.redirect('/home')
                 }
             } else {
                 console.log('No result')
@@ -115,7 +130,34 @@ app.post('/login', async (req,res) => {
     }
 })
 
+//This code create the 'home' page.
+app.get('/home', (req,res) => {
+    let userid = req.session.user.userid
 
+    models.User.findAll({
+        where: {
+            id: userid
+        }
+    }).then(user => {
+        console.log(user)
+        res.render('home', {user:user})
+    })
+
+})
+
+//This code give functionality to the 'logout' button.
+app.post('/logout',(req,res) => {
+    if(req.session) {
+        req.session.destroy(error => {
+            if(error) {
+                next(error)
+                console.log('Problem!')
+            } else {
+                res.redirect('/login')
+            }
+        }) 
+    }
+})
 
 //This line of code will tell us that the server is running.
 app.listen(3001, () => {console.log('Server is running...')})
