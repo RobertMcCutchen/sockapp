@@ -6,8 +6,20 @@ const app = express()
 const bcrypt = require('bcrypt')
 const saltRounds = 10
 const models = require('./models')
+const Sequelize = require('sequelize')
+
 const multer = require('multer')
-const upload = multer({dest: __dirname + '/uploads/images'})
+const storage = multer.diskStorage(
+    {
+        destination: function (req, file, cb) {
+            cb(null, __dirname + '/uploads/images')
+          },
+        filename: function ( req, file, cb ) {
+            cb( null, req.body.username + '-' + Date.now() + '-' + file.originalname)
+        }
+    }
+);
+const upload = multer({storage: storage})
 
 //This code initializes sessions.
 app.use(session({
@@ -62,17 +74,11 @@ app.post('/register', upload.single('photo'), (req,res) => {
     let sockstyle = req.body.sockstyle
     let emailaddress = req.body.emailaddress
     let imageurl = null
-
-    // res.json(req.file).then(object => object.path)
     console.log('file', req.file)
     if(req.file) {
-        // res.json(req.file)
         imageurl = req.file.filename
     }
-    // else {
-    //     res.send("Something went wrong with upload...")
-    // }
-    
+
     //This encrypts the password.
     bcrypt.hash(password, 10).then(function(hash) {
         let user = models.User.build({
@@ -80,14 +86,20 @@ app.post('/register', upload.single('photo'), (req,res) => {
             password: hash,
             sockcolor: sockcolor,
             sockstyle: sockstyle,
-            imageurl: imageurl,
+            imageurl: '/uploads/images/' + imageurl,
             emailaddress: emailaddress,
         })
 
-        user.save().then(savedUser => console.log('user saved'))
+        user.save().then(savedUser => {
+            if(req.session) {
+                console.log('there is a session')
+                req.session.user = {userid: savedUser.id}
+                res.redirect('/home')
+            }
+        })
+    
     .catch(error => console.log(error))
-    }) 
-    res.redirect('/home')
+    })
 })
 
 //This code creates the 'login' page.
@@ -106,7 +118,6 @@ app.post('/login', async (req,res) => {
         }
     })
     if(user) {
-
         let result = await bcrypt.compare(password, user.password)
         if(result) {
             console.log('rs of brcypt')
@@ -134,16 +145,29 @@ app.post('/login', async (req,res) => {
 app.get('/home', (req,res) => {
     let userid = req.session.user.userid
 
+    console.log(req.session.user)
+    /*let sockcolor = req.session.user.sockcolor
+    let sockstyle = req.session.user.sockstyle*/
+
     models.User.findAll({
         where: {
             id: userid
         }
-    }).then(user => {
-        console.log(user)
-        res.render('home', {user:user})
+    }).then(userArray => {
+        let user = userArray[0]
+        models.User.findAll({
+            where: {
+                sockcolor: user.sockcolor,
+                sockstyle: user.sockstyle,
+                id: {[Sequelize.Op.not]: userid}
+            }
+        }).then(potentialmatch => {
+            res.render('home', {user: user, potentialmatch: potentialmatch})
+        })
     })
 
-})
+
+})    
 
 //This code give functionality to the 'logout' button.
 app.post('/logout',(req,res) => {

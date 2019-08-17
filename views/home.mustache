@@ -22,18 +22,28 @@
         {{#user}}
         <div id="cards" style="display: flex; flex-direction: row">
             <div class="card" style="width: 30rem; top: 8rem; left: 7%">
-                <img src="/uploads/images/{{imageurl}}.jpg" class="card-img-top" alt="...">
+                <img src="{{imageurl}}" class="card-img-top" style="height: 30rem" alt="...">
                 <div class="card-body">
-                    <h5 class="card-title">{{username}}</h5>
-                    <p class="card-text">{{sockcolor}}, {{sockstyle}}</p>
+                    <h5 class="card-title" style="text-transform: capitalize">{{username}}</h5>
+                    <p class="card-text" style="text-transform: capitalize">{{sockcolor}}, {{sockstyle}}</p>
                     <a href="#" class="card-link">Update</a>
                 </div>
             </div>
         </div>
         {{/user}}
-        <div class="container testimonial-group">
-            <div class="row text-center">
+        <div id="potentialMatches">
+            {{#potentialmatch}}
+            <div id="cards" style="display: flex; flex-direction: row">
+                <div class="card" style="width: 15rem; top: 8rem; left: 7%">
+                    <img src="{{imageurl}}" class="card-img-top" style="height: 15rem" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title" style="text-transform: capitalize">{{username}}</h5>
+                        <p class="card-text" style="text-transform: capitalize">{{sockcolor}}, {{sockstyle}}</p>
+                        <a href="#" class="card-link">Update</a>
+                    </div>
+                </div>
             </div>
+            {{/potentialmatch}}
         </div>
     </body>
 </html>
